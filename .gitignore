@@ -1,0 +1,15 @@
+# clasp (future use)
+.clasp.json
+.clasprc.json
+
+# local / secrets
+*.local
+*.local.*
+.env
+.env.*
+
+# OS
+.DS_Store
+
+# node (if added later)
+node_modules/

@@ -1,6 +1,6 @@
-# clasp (future use)
-.clasp.json
+# clasp credentials (secret) - never commit
 .clasprc.json
+# NOTE: .clasp.json is committed on purpose (contains only scriptId, no secrets)
 
 # local / secrets
 *.local

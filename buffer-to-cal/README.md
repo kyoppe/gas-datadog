@@ -38,4 +38,4 @@ with structured logging to Datadog.
 ## Notes
 
 - Linked to its Apps Script project via `.clasp.json` (run `clasp push` / `clasp pull`).
-- Secrets live in Script Properties, never in this repo.
+- Secrets live in Script Properties.

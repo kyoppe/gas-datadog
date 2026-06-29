@@ -8,6 +8,8 @@ const CONFIG = {
   bizEndHour: 18,
   holidayCalendarId: 'ja.japanese#holiday@group.v.calendar.google.com',
   workCalendarId: 'primary',
+  service: 'statuspage-office-hours',
+  ddTags: 'env:kyo',
 };
 
 const STATE_DEFS = {
@@ -30,49 +32,98 @@ function updateStatusPage() {
   const now = new Date();
   console.log('[updateStatusPage] now=' + Utilities.formatDate(now, CONFIG.tz, 'yyyy-MM-dd HH:mm:ss') + ' JST');
 
-  const desired = computeDesiredState(now);
+  try {
+    const desired = computeDesiredState(now);
 
-  let activeId = props.getProperty('ACTIVE_DEG_ID');
-  let activeState = props.getProperty('ACTIVE_STATE');
-  console.log('  current: activeId=' + (activeId || 'none') + ' activeState=' + (activeState || 'none'));
+    let activeId = props.getProperty('ACTIVE_DEG_ID');
+    let activeState = props.getProperty('ACTIVE_STATE');
+    console.log('  current: activeId=' + (activeId || 'none') + ' activeState=' + (activeState || 'none'));
 
-  if (activeId) {
-    const deg = getDegradation(activeId);
-    if (!deg || deg.attributes.status === 'resolved') {
-      console.log('  active degradation is gone/resolved -> clearing state');
-      activeId = null; activeState = null;
-      props.deleteProperty('ACTIVE_DEG_ID');
-      props.deleteProperty('ACTIVE_STATE');
-    } else {
-      console.log('  active degradation alive (status=' + deg.attributes.status + ')');
-    }
-  }
-
-  if (desired === 'OPERATIONAL') {
     if (activeId) {
-      resolveDegradation(activeId);
-      props.deleteProperty('ACTIVE_DEG_ID');
-      props.deleteProperty('ACTIVE_STATE');
-      console.log('  ACTION: resolved (' + activeState + ') -> operational (banner cleared)');
-    } else {
-      console.log('  ACTION: none (already operational, no banner)');
+      const deg = getDegradation(activeId);
+      if (!deg || deg.attributes.status === 'resolved') {
+        console.log('  active degradation is gone/resolved -> clearing state');
+        activeId = null; activeState = null;
+        props.deleteProperty('ACTIVE_DEG_ID');
+        props.deleteProperty('ACTIVE_STATE');
+      } else {
+        console.log('  active degradation alive (status=' + deg.attributes.status + ')');
+      }
     }
-    return;
-  }
 
-  if (!activeId) {
-    const id = createDegradation(desired);
-    props.setProperty('ACTIVE_DEG_ID', id);
-    props.setProperty('ACTIVE_STATE', desired);
-    console.log('  ACTION: created degradation id=' + id + ' for ' + desired + ' (' + STATE_DEFS[desired].component + ')');
-  } else if (activeState === desired) {
-    console.log('  ACTION: none (unchanged: ' + desired + ', banner continues)');
-  } else {
-    resolveDegradation(activeId);
-    const id = createDegradation(desired);
-    props.setProperty('ACTIVE_DEG_ID', id);
-    props.setProperty('ACTIVE_STATE', desired);
-    console.log('  ACTION: switched ' + activeState + ' -> ' + desired + ' (new id=' + id + ')');
+    const previousState = activeState || 'OPERATIONAL';
+    let action;
+    let degId = activeId;
+
+    if (desired === 'OPERATIONAL') {
+      if (activeId) {
+        resolveDegradation(activeId);
+        props.deleteProperty('ACTIVE_DEG_ID');
+        props.deleteProperty('ACTIVE_STATE');
+        degId = null;
+        action = 'resolved';
+        console.log('  ACTION: resolved (' + activeState + ') -> operational (banner cleared)');
+      } else {
+        action = 'noop_operational';
+        console.log('  ACTION: none (already operational, no banner)');
+      }
+    } else if (!activeId) {
+      degId = createDegradation(desired);
+      props.setProperty('ACTIVE_DEG_ID', degId);
+      props.setProperty('ACTIVE_STATE', desired);
+      action = 'created';
+      console.log('  ACTION: created degradation id=' + degId + ' for ' + desired + ' (' + STATE_DEFS[desired].component + ')');
+    } else if (activeState === desired) {
+      action = 'unchanged';
+      console.log('  ACTION: none (unchanged: ' + desired + ', banner continues)');
+    } else {
+      resolveDegradation(activeId);
+      degId = createDegradation(desired);
+      props.setProperty('ACTIVE_DEG_ID', degId);
+      props.setProperty('ACTIVE_STATE', desired);
+      action = 'switched';
+      console.log('  ACTION: switched ' + activeState + ' -> ' + desired + ' (new id=' + degId + ')');
+    }
+
+    ddLog('statuspage ' + action + ': ' + previousState + ' -> ' + desired, 'info', {
+      evt: 'status_evaluated',
+      desired_state: desired,
+      previous_state: previousState,
+      action: action,
+      component_status: desired === 'OPERATIONAL' ? 'operational' : STATE_DEFS[desired].component,
+      degradation_id: degId || null,
+      changed: (action === 'created' || action === 'switched' || action === 'resolved'),
+    });
+  } catch (e) {
+    ddLog('statuspage error: ' + e, 'error', { evt: 'status_error', error: String(e) });
+    throw e;
+  }
+}
+
+function ddLog(message, level, attrs) {
+  console.log('[' + (level || 'info') + '] ' + message);
+  const apiKey = PropertiesService.getScriptProperties().getProperty('DD_API_KEY');
+  if (!apiKey) return;
+  const now = new Date();
+  const entry = Object.assign({
+    timestamp: now.toISOString(),
+    message: message,
+    service: CONFIG.service,
+    ddsource: 'appscript',
+    ddtags: CONFIG.ddTags,
+    status: level || 'info',
+    log_hour: parseInt(Utilities.formatDate(now, CONFIG.tz, 'H'), 10),
+    log_weekday: Utilities.formatDate(now, CONFIG.tz, 'EEE').toLowerCase(),
+  }, attrs || {});
+  const options = {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { 'DD-API-KEY': apiKey },
+    payload: JSON.stringify([entry]),
+  };
+  try {
+    UrlFetchApp.fetch('https://http-intake.logs.' + CONFIG.ddSite + '/api/v2/logs', options);
+  } catch (e) {
+    console.log('ddLog failed: ' + e);
   }
 }
 

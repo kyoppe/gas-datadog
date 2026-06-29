@@ -28,6 +28,6 @@ are not.
 
 ## Conventions
 
-- Secrets (Datadog API key / App key) live in **Script Properties**, never in the repo.
+- Secrets (Datadog API key / App key) live in **Script Properties**.
 - Non-secret IDs (Status Page ID, Component ID, scriptId) may be committed.
 - `.clasp.json` (scriptId) is committed; clasp credentials `.clasprc.json` are gitignored.

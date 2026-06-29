@@ -4,7 +4,7 @@ Updates a personal Datadog Status Page component based on Google Calendar, every
 
 - Page: <https://kyouheiohno.statuspage.datadoghq.com/>
 - Component: `Availability / Office Hours`
-- Business hours: weekdays 10:00-18:00 (JST) — not shown on the page itself
+- Business hours: weekdays 10:00-18:00 (JST)
 
 ## How it works
 
@@ -26,8 +26,8 @@ Every 30 minutes `updateStatusPage()`:
 | After hours / stepped out (partial OOO) | `partial_outage` | orange | yes |
 | Weekday 10-18, working | `operational` | green | no |
 
-This intentionally lowers the uptime % (only ~24% "up") as an honest availability page.
-Swap to `maintenance` / `degraded` in `STATE_DEFS` if you'd rather keep uptime high.
+`major_outage` and `partial_outage` count against uptime %, so the page sits around
+~24% "up". For a higher uptime %, use `maintenance` / `degraded` in `STATE_DEFS`.
 
 ## Setup
 
@@ -44,6 +44,19 @@ Swap to `maintenance` / `degraded` in `STATE_DEFS` if you'd rather keep uptime h
 
 4. Run `updateStatusPage` once and approve the Calendar + external-request permissions.
 5. Run `createTrigger` once to install the 30-minute time trigger.
+
+## Datadog logging
+
+Each run ships a structured log to Datadog Logs (`https://http-intake.logs.<site>/api/v2/logs`)
+using the same `DD_API_KEY`. No extra Script Property needed.
+
+- service `statuspage-office-hours`, source `appscript`, tags `env:kyo`
+- Per run (`evt:status_evaluated`): `desired_state`, `previous_state`, `action`
+  (`created` / `switched` / `resolved` / `unchanged` / `noop_operational`),
+  `component_status`, `degradation_id`, `changed`, plus `log_hour` / `log_weekday`
+- On failure (`evt:status_error`, `status:error`): the exception, then re-thrown
+
+Find changes with: `service:statuspage-office-hours @changed:true`.
 
 ## Notes
 

@@ -277,5 +277,5 @@ function createTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
     if (t.getHandlerFunction() === 'updateStatusPage') ScriptApp.deleteTrigger(t);
   });
-  ScriptApp.newTrigger('updateStatusPage').timeBased().everyMinutes(30).create();
+  ScriptApp.newTrigger('updateStatusPage').timeBased().everyMinutes(10).create();
 }

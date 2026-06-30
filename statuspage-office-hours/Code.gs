@@ -271,11 +271,3 @@ function resolveDegradation(id) {
   const res = ddFetch('patch', '/api/v2/statuspages/' + CONFIG.pageId + '/degradations/' + id, payload);
   if (res.getResponseCode() >= 300) throw new Error('Resolve failed ' + res.getResponseCode() + ': ' + res.getContentText());
 }
-
-// Run once to install the 30-minute trigger.
-function createTrigger() {
-  ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (t.getHandlerFunction() === 'updateStatusPage') ScriptApp.deleteTrigger(t);
-  });
-  ScriptApp.newTrigger('updateStatusPage').timeBased().everyMinutes(10).create();
-}

@@ -1,6 +1,6 @@
 # statuspage-office-hours
 
-Updates a personal Datadog Status Page component based on Google Calendar, every 30 minutes.
+Updates a personal Datadog Status Page component based on Google Calendar, every 10 minutes.
 
 - Page: <https://kyouheiohno.statuspage.datadoghq.com/>
 - Component: `Availability / Office Hours`
@@ -12,7 +12,7 @@ Updates a personal Datadog Status Page component based on Google Calendar, every
 Notices (Degradations)**, not something you set directly. So to color the component we
 create a Degradation notice, and to go back to green we resolve it.
 
-Every 30 minutes `updateStatusPage()`:
+Every 10 minutes `updateStatusPage()`:
 
 1. Computes the desired state from the calendar (`computeDesiredState`).
 2. Reconciles against the currently active degradation tracked in Script Properties.
@@ -45,7 +45,8 @@ stays green even though the page shows an after-hours banner. Only weekends/holi
    | `DD_APP_KEY` | App key from a user with `status_pages_incident_write` |
 
 4. Run `updateStatusPage` once and approve the Calendar + external-request permissions.
-5. Run `createTrigger` once to install the 30-minute time trigger.
+5. In the Apps Script **Triggers** panel, add a time-based trigger for `updateStatusPage`
+   running every 10 minutes.
 
 ## Datadog logging
 

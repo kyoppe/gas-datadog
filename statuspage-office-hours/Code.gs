@@ -17,13 +17,13 @@ const STATE_DEFS = {
                  description: "It's the weekend. Kyouhei is recharging, back on the next business day." },
   HOLIDAY:     { component: 'major_outage', title: 'Public holiday (Japan)',
                  description: 'Today is a public holiday in Japan. Back on the next business day.' },
-  AFTER_HOURS: { component: 'partial_outage', title: 'Outside office hours',
+  AFTER_HOURS: { component: 'maintenance', title: 'Outside office hours',
                  description: 'Kyouhei is offline for now. Messages will be picked up the next business morning.' },
-  OOO_FULL:    { component: 'major_outage', title: 'Out of office',
+  OOO_FULL:    { component: 'partial_outage', title: 'Out of office',
                  description: 'Kyouhei is out of office today. Responses will be delayed until the next business day.' },
-  OOO_PTO:     { component: 'major_outage', title: 'On PTO',
+  OOO_PTO:     { component: 'partial_outage', title: 'On PTO',
                  description: 'Kyouhei is on PTO today. Responses will be delayed until the next business day.' },
-  OOO_PARTIAL: { component: 'partial_outage', title: 'Stepped out',
+  OOO_PARTIAL: { component: 'maintenance', title: 'Stepped out',
                  description: 'Kyouhei has stepped out for a bit. Back shortly.' },
 };
 

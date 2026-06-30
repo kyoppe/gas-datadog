@@ -22,12 +22,14 @@ Every 30 minutes `updateStatusPage()`:
 
 | Situation | component status | Color | Counts as downtime |
 |-|-|-|-|
-| Weekend / holiday / full-day OOO / PTO | `major_outage` | red | yes |
-| After hours / stepped out (partial OOO) | `partial_outage` | orange | yes |
+| Weekend / holiday | `major_outage` | red | yes |
+| Full-day OOO / PTO (weekday) | `partial_outage` | orange | yes |
+| After hours / stepped out | `maintenance` | maintenance | no |
 | Weekday 09-18, working | `operational` | green | no |
 
-`major_outage` and `partial_outage` count against uptime %, so the page sits around
-~24% "up". For a higher uptime %, use `maintenance` / `degraded` in `STATE_DEFS`.
+`maintenance` keeps uptime % and the daily bar unaffected, so a normal worked weekday
+stays green even though the page shows an after-hours banner. Only weekends/holidays
+(red) and full-day weekday absences (orange) count against uptime.
 
 ## Setup
 

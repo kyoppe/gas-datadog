@@ -4,7 +4,7 @@ Updates a personal Datadog Status Page component based on Google Calendar, every
 
 - Page: <https://kyouheiohno.statuspage.datadoghq.com/>
 - Component: `Availability / Office Hours`
-- Business hours: weekdays 10:00-18:00 (JST)
+- Business hours: weekdays 09:00-18:00 (JST)
 
 ## How it works
 
@@ -24,7 +24,7 @@ Every 30 minutes `updateStatusPage()`:
 |-|-|-|-|
 | Weekend / holiday / full-day OOO / PTO | `major_outage` | red | yes |
 | After hours / stepped out (partial OOO) | `partial_outage` | orange | yes |
-| Weekday 10-18, working | `operational` | green | no |
+| Weekday 09-18, working | `operational` | green | no |
 
 `major_outage` and `partial_outage` count against uptime %, so the page sits around
 ~24% "up". For a higher uptime %, use `maintenance` / `degraded` in `STATE_DEFS`.

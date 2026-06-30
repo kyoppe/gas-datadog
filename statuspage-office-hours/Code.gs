@@ -4,7 +4,7 @@ const CONFIG = {
   componentId: PropertiesService.getScriptProperties().getProperty('DD_COMPONENT_ID'),
   tz: 'Asia/Tokyo',
   tzOffset: '+09:00',
-  bizStartHour: 10,
+  bizStartHour: 9,
   bizEndHour: 18,
   holidayCalendarId: 'ja.japanese#holiday@group.v.calendar.google.com',
   workCalendarId: 'primary',
